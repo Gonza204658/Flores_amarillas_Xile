@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Campo de flores amarillas</title>
+<style>
+  :root{
+    --sky-top:#fdf6e3;
+    --sky-bottom:#fff9ec;
+    --petal-1:#ffd23f;
+    --petal-2:#ffb703;
+    --petal-3:#fff1a8;
+    --stem:#5b7a3a;
+    --stem-dark:#3f5a29;
+    --center:#c77d00;
+    box-sizing:border-box;
+    padding-top:env(safe-area-inset-top,0px);
+    padding-bottom:env(safe-area-inset-bottom,0px);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --sky-top:#1b1f16;
+      --sky-bottom:#12140f;
+      --petal-1:#ffd23f;
+      --petal-2:#ffb703;
+      --petal-3:#ffe08a;
+      --stem:#4a6636;
+      --stem-dark:#2e421f;
+      --center:#c77d00;
+    }
+  }
+  :root[data-theme="dark"]{
+    --sky-top:#1b1f16;
+    --sky-bottom:#12140f;
+    --stem:#4a6636;
+    --stem-dark:#2e421f;
+  }
+
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{height:100%;overflow-x:hidden;}
+  body{
+    font-family:"Georgia","Iowan Old Style",serif;
+    background:linear-gradient(to bottom, var(--sky-top), var(--sky-bottom));
+    min-height:100%;
+    position:relative;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+
+  /* ---------- contenido central ---------- */
+  .hero{
+    position:relative;
+    z-index:5;
+    text-align:center;
+    padding:6vh 1.5rem 34vh;
+    max-width:640px;
+  }
+  .hero h1{
+    font-size:clamp(2.1rem, 6vw, 3.4rem);
+    color:#5c4300;
+    font-weight:400;
+    letter-spacing:0.5px;
+    line-height:1.15;
+    opacity:0;
+    animation:riseIn 1.4s ease-out 0.3s forwards;
+  }
+  .hero p{
+    margin-top:1rem;
+    font-size:clamp(1rem, 2.4vw, 1.2rem);
+    color:#7a6425;
+    opacity:0;
+    animation:riseIn 1.4s ease-out 0.8s forwards;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]) .hero h1{ color:#f3e6b8; }
+    :root:not([data-theme="light"]) .hero p{ color:#cbb87a; }
+  }
+  :root[data-theme="dark"] .hero h1{ color:#f3e6b8; }
+  :root[data-theme="dark"] .hero p{ color:#cbb87a; }
+
+  @keyframes riseIn{
+    from{opacity:0; transform:translateY(14px);}
+    to{opacity:1; transform:translateY(0);}
+  }
+
+  /* ---------- lienzo de flores ---------- */
+  #field{
+    position:fixed;
+    inset:0;
+    width:100%;
+    height:100%;
+    pointer-events:none;
+    z-index:2;
+    overflow:hidden;
+  }
+
+  .flower{
+    position:absolute;
+    bottom:-10px;
+    transform-origin:bottom center;
+    opacity:0;
+    animation:emerge 1.6s cubic-bezier(.2,.8,.25,1) forwards;
+    will-change:transform, opacity;
+  }
+
+  .sway{
+    animation:sway var(--sway-dur,5s) ease-in-out var(--sway-delay,0s) infinite;
+    transform-origin:bottom center;
+  }
+
+  @keyframes emerge{
+    0%{ opacity:0; transform: translateY(40px) scale(0.6); }
+    60%{ opacity:1; }
+    100%{ opacity:1; transform: translateY(0) scale(1); }
+  }
+
+  @keyframes sway{
+    0%,100%{ transform:rotate(-2.2deg); }
+    50%{ transform:rotate(2.2deg); }
+  }
+
+  /* petalo cayendo */
+  .falling-petal{
+    position:fixed;
+    top:-5%;
+    z-index:3;
+    pointer-events:none;
+    opacity:0.9;
+    animation-name:fall, wobble;
+    animation-timing-function:linear, ease-in-out;
+    animation-iteration-count:1, infinite;
+    will-change:top, margin-left;
+  }
+  @keyframes fall{
+    from{ top:-5%; }
+    to{ top:108%; }
+  }
+  @keyframes wobble{
+    0%,100%{ margin-left:0px; }
+    50%{ margin-left:40px; }
+  }
+
+  footer{
+    position:fixed;
+    bottom:calc(10px + env(safe-area-inset-bottom, 0px));
+    left:0;
+    right:0;
+    text-align:center;
+    font-size:0.72rem;
+    color:#a08a4a;
+    z-index:6;
+    letter-spacing:0.4px;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .flower, .sway, .falling-petal, .hero h1, .hero p{
+      animation:none !important;
+      opacity:1 !important;
+      transform:none !important;
+    }
+  }
+</style>
+</head>
+<body>
+
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <radialGradient id="centerGlow" cx="50%" cy="50%" r="60%">
+        <stop offset="0%" stop-color="#ffe98a"/>
+        <stop offset="100%" stop-color="var(--center)"/>
+      </radialGradient>
+      <linearGradient id="petalGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" stop-color="var(--petal-3)"/>
+        <stop offset="55%" stop-color="var(--petal-1)"/>
+        <stop offset="100%" stop-color="var(--petal-2)"/>
+      </linearGradient>
+      <linearGradient id="stemGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" stop-color="var(--stem)"/>
+        <stop offset="100%" stop-color="var(--stem-dark)"/>
+      </linearGradient>
+    </defs>
+  </svg>
+
+  <div id="field"></div>
+
+  <main class="hero">
+    <h1>Feliz Día Amor🌻❤️</h1>
+    <p>.</p>
+  </main>
+
+  <footer>fondo animado &middot; hecho con SVG, CSS y JS</footer>
+
+<script>
+(function(){
+  const field = document.getElementById('field');
+  const w = () => window.innerWidth;
+  const h = () => window.innerHeight;
+
+  // --- construye una flor SVG con variaciones aleatorias ---
+  function buildFlowerSVG(size, petalCount, bloomed, stemBend){
+    const cx = size/2, cyFlower = size*0.30;
+    const petalLen = size*0.30, petalWid = size*0.16;
+    let petals = "";
+    for(let i=0;i<petalCount;i++){
+      const angle = (360/petalCount)*i;
+      petals += `<g transform="rotate(${angle} ${cx} ${cyFlower})">
+        <ellipse cx="${cx}" cy="${cyFlower - petalLen*0.55}" rx="${petalWid/2}" ry="${petalLen/2}"
+          fill="url(#petalGrad)" stroke="#e0960066" stroke-width="0.6"/>
+      </g>`;
+    }
+    const budScale = bloomed ? 1 : 0.001;
+    const bend = stemBend; // variación lateral del tallo para que no todas sean idénticas
+    return `
+    <svg viewBox="0 0 ${size} ${size*2.3}" width="${size}" height="${size*2.3}" xmlns="http://www.w3.org/2000/svg" overflow="visible">
+      <!-- tallo -->
+      <path d="M ${cx} ${size*2.25}
+               C ${cx-8+bend} ${size*1.6}, ${cx+10-bend} ${size*1.1}, ${cx} ${cyFlower+size*0.12}"
+            stroke="url(#stemGrad)" stroke-width="${Math.max(2.4, size*0.02)}" fill="none" stroke-linecap="round"/>
+      <!-- hojas -->
+      <path d="M ${cx} ${size*1.55} q -${size*0.22} -${size*0.06} -${size*0.30} ${size*0.10}
+                q ${size*0.10} ${size*0.14} ${size*0.30} ${size*0.02} z"
+            fill="url(#stemGrad)" opacity="0.9"/>
+      <path d="M ${cx} ${size*1.85} q ${size*0.24} -${size*0.02} ${size*0.32} ${size*0.14}
+                q -${size*0.12} ${size*0.12} -${size*0.32} -${size*0.02} z"
+            fill="url(#stemGrad)" opacity="0.9"/>
+      <!-- flor -->
+      <g transform="translate(0,0) scale(${budScale})" style="transform-origin:${cx}px ${cyFlower}px;">
+        ${petals}
+        <circle cx="${cx}" cy="${cyFlower}" r="${size*0.075}" fill="url(#centerGlow)"/>
+      </g>
+      ${!bloomed ? `<circle cx="${cx}" cy="${cyFlower}" r="${size*0.09}" fill="url(#petalGrad)" stroke="#e0960066" stroke-width="0.6"/>` : ""}
+    </svg>`;
+  }
+
+  // más densidad: más flores en pantallas anchas, mínimo más alto para que nunca se vea vacío
+  function computeFlowerCount(){
+    return Math.min(70, Math.max(34, Math.floor(w()/34)));
+  }
+
+  // crea una flor y la agrega al fragmento. `leftPct` ya viene calculado (cuadrícula + jitter).
+  function addFlower(pieces, leftPct, sizeMin, sizeMax, depthMin, depthMax, zBase){
+    const wrap = document.createElement('div');
+    wrap.className = 'flower';
+
+    const size = sizeMin + Math.random()*(sizeMax-sizeMin);
+    const depthShift = depthMin + Math.random()*(depthMax-depthMin);
+    const delay = Math.random()*2.6;
+    const bloomed = Math.random() > 0.15;
+    const petalCount = 5 + Math.floor(Math.random()*3); // 5 a 7 pétalos
+    const stemBend = Math.random()*14 - 7;
+
+    wrap.style.left = `calc(${leftPct}% - ${size/2}px)`;
+    wrap.style.bottom = `${-10 - depthShift}px`;
+    wrap.style.animationDelay = `${delay}s`;
+    wrap.style.zIndex = zBase + Math.floor(size);
+
+    const swayer = document.createElement('div');
+    swayer.className = 'sway';
+    swayer.style.setProperty('--sway-dur', (3.5 + Math.random()*3.5)+'s');
+    swayer.style.setProperty('--sway-delay', (Math.random()*2)+'s');
+    swayer.innerHTML = buildFlowerSVG(size, petalCount, bloomed, stemBend);
+
+    wrap.appendChild(swayer);
+    pieces.appendChild(wrap);
+  }
+
+  // reparte `count` elementos en una cuadrícula de 0-100% con jitter acotado al ancho
+  // de cada casilla, para que nunca queden huecos grandes ni amontonamientos.
+  function jitteredPositions(count, jitterFraction){
+    const slot = 100/count;
+    const positions = [];
+    for(let i=0;i<count;i++){
+      const jitter = (Math.random()-0.5)*slot*jitterFraction;
+      positions.push(i*slot + slot/2 + jitter);
+    }
+    return positions;
+  }
+
+  function spawnFlowers(){
+    field.innerHTML = "";
+    const pieces = document.createDocumentFragment();
+
+    // --- capa trasera: muchas flores pequeñas y juntas que rellenan cualquier hueco ---
+    const backCount = Math.round(computeFlowerCount()*1.4);
+    jitteredPositions(backCount, 0.8).forEach(leftPct=>{
+      addFlower(pieces, leftPct, 28, 55, 6, 26, 0);
+    });
+
+    // --- capa delantera: flores más grandes y variadas, en primer plano ---
+    const frontCount = computeFlowerCount();
+    jitteredPositions(frontCount, 0.9).forEach(leftPct=>{
+      addFlower(pieces, leftPct, 60, 130, 0, 4, 200);
+    });
+
+    field.appendChild(pieces);
+  }
+
+  // --- pétalos cayendo ocasionalmente ---
+  function spawnPetal(){
+    const p = document.createElement('div');
+    p.className = 'falling-petal';
+    const size = 8 + Math.random()*10;
+    p.style.left = (Math.random()*100)+'vw';
+    const dur = 6 + Math.random()*6;
+    p.style.animationDuration = dur+'s, ' + (1.5+Math.random())+'s';
+    p.innerHTML = `<svg width="${size}" height="${size*1.6}" viewBox="0 0 20 32">
+      <ellipse cx="10" cy="16" rx="9" ry="15" fill="url(#petalGrad)" opacity="0.85"
+        transform="rotate(${Math.random()*360} 10 16)"/>
+    </svg>`;
+    document.body.appendChild(p);
+    setTimeout(()=>p.remove(), dur*1000 + 200);
+  }
+
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  spawnFlowers();
+  let petalInterval = null;
+  if(!reduceMotion){
+    // más pétalos cayendo, con leve variación de ritmo para que se sienta más natural
+    petalInterval = setInterval(spawnPetal, 550);
+  }
+
+  let resizeTimer;
+  window.addEventListener('resize', ()=>{
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(spawnFlowers, 300);
+  });
+})();
+</script>
+</body>
+</html>
